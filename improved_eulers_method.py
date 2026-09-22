@@ -21,7 +21,7 @@ def improved_eulers_method(x_0: float, y_0: float, y_slope: Callable, x_n: float
 
     print(f"x_{len(x) - 1} = {x[-1]:.2f} | y_{len(y) - 1} = {y[-1]:.4f}")
 
-    while x[-1] <= x_n:
+    while x[-1] < x_n:
         
         y_pred.append(y[-1] + h * y_slope(x[-1], y[-1]))
         x.append(x[-1] + h)

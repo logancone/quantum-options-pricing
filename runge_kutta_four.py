@@ -25,7 +25,7 @@ def runge_kutta_four(x_0: float, y_0: float, y_slope: Callable, x_n: float, h: f
 
     print(f"x_{len(x) - 1} = {x[-1]:.2f} | y_{len(y) - 1} = {y[-1]:.4f}")
 
-    while x[-1] <= x_n:
+    while x[-1] < x_n:
         k_1.append(y_slope(x[-1], y[-1]))
         k_2.append(y_slope(x[-1]+0.5*h,y[-1]+0.5*h*k_1[-1]))
         k_3.append(y_slope(x[-1]+0.5*h,y[-1]+0.5*h*k_2[-1]))

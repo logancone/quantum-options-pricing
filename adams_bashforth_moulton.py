@@ -20,8 +20,9 @@ def adams_bashforth_moulton(x_0: float, y_0: float, y_slope: Callable, x_n: floa
     y_pred = y.copy()
 
     x_n = round(x_n, 10)
-    print("done")
-    while x[-1] <= x_n:
+    print("Starting ABM")
+    while x[-1] < x_n:
+        print(x[-1], x_n)
         y_pred.append(y[-1] + (h/24) * 
                       (55*y_slope(x[-1],y[-1]) - 
                        59*y_slope(x[-2],y[-2]) + 
@@ -36,10 +37,11 @@ def adams_bashforth_moulton(x_0: float, y_0: float, y_slope: Callable, x_n: floa
                   5*y_slope(x[-3],y[-2]) + 
                   y_slope(x[-4],y[-3])))
         
-        print(f"x_{len(x) - 1} = {x[-1]:.2f} | y_{len(y) - 1} = {y[-1]:.4f}")
+        print(f"x_{len(x) - 1} = {x[-1]:.2f} | y_{len(y) - 1} = {y[-1]:.9f}")
     
     return x, y 
     
 
 if __name__ == "__main__":
     adams_bashforth_moulton(0, 1, (lambda x, y: x+y-1), 0.8, 0.2)
+    
