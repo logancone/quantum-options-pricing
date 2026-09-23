@@ -2,7 +2,7 @@ from collections.abc import Callable
 
 import numpy as np
 
-def finite_difference_method_setup(x_l: float, y_l: float, x_r: float, y_r: float, n: int, P: Callable, Q: Callable, f: Callable):
+def finite_difference_method(x_l: float, y_l: float, x_r: float, y_r: float, n: int, P: Callable, Q: Callable, f: Callable):
     """Runs the finite difference method.
     Expects form y'' + P(x)y' + Q(x)y = f(x)
 
@@ -47,8 +47,6 @@ def finite_difference_method_setup(x_l: float, y_l: float, x_r: float, y_r: floa
         else:
             eq[i] = (1 + (h/2)*P(i))
         
-        # Substitue ending conditions
-        
         equations.append(eq)
         answers.append(answer)
         
@@ -58,14 +56,11 @@ def finite_difference_method_setup(x_l: float, y_l: float, x_r: float, y_r: floa
     for id, eq in enumerate(equations):
         print(eq, answers[id])
         
-    return equations, answers
-    # solution = np.linalg.solve(equations, answers)
+    solution = np.linalg.solve(equations, answers)
     
-    # return solution
+    return solution
     
 if __name__ == "__main__":
-    eq, ans = finite_difference_method_setup(0, 0, 1, 5, 4, lambda x: 0, lambda x: -4, lambda x: 0)
-    
-    solution = np.linalg.solve(eq, ans)
-    print(solution)
-    
+    s = finite_difference_method(0, 0, 1, 5, 4, lambda x: 0, lambda x: -4, lambda x: 0)
+
+    print(s)

@@ -1,5 +1,3 @@
-from finite_difference_method import finite_difference_method_setup
-
 import numpy as np
 
 # Reduced Plank Constant (in Joules)
