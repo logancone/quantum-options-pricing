@@ -1,18 +1,27 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Reduced Plank Constant (in Joules)
 RPC = 1.05457182e-34 #J
 
 convert_to_ev = lambda x: x / 1.602e-19
 
-def finite_square_well(m: float, L: float, V_0: float, n: int):
+def finite_square_well(m: float, L: float, V_0: float, n: int, 
+                       visualize: bool = True, num_waves_to_show: int = 8, show_energy_lines: bool = False):
     """Simulates a finite square well using the Schrodinger equation.
+    Visualizes using matplotlib
 
     Args:
-        m (float): The mass of the particle (g)
+        m (float): The mass of the particle (kg)
         L (float): The length of the box (m)
         V_0 (float): The potential energy outside the box (J)
         n (int): Number of steps (accuracy)
+        visualize (bool): Pass True if you want to show a graph of the wave functions,
+            False otherwise. Defaults to True.
+        num_waves_to_show (int): How many waves to show in the visualization graph. Defaults
+            to 8.
+        show_energy_lines (bool): Pass True if you want to show a light gray line as the energy line,
+            False otherwise. Defaults to False.
 
     Returns:
         A namedtuple with the following attributes:
@@ -62,12 +71,34 @@ def finite_square_well(m: float, L: float, V_0: float, n: int):
         
     solution = np.linalg.eigh(equations)
     
-    print(solution.eigenvalues[:6])
     
-    return solution
+    # Graphing the waves
+    if visualize:
+        x = x[1:-1]
+        
+        # Plot red line for 0 energy (floor)
+        plt.axhline(0, color='red')
+        
+        # Plot the well in black (width of L, height of V_0)
+        plt.plot([x[0], -L/2, -L/2, L/2, L/2, x[-1]], [V_0, V_0, 0, 0, V_0, V_0], 'k-', lw=3, label="Potential Well")
+
+        # Wave functions are unitless, so multiply by the same scale as units to fit them into the visualization
+        scale_factor = 1e-18
+        
+        for i in range(0, num_waves_to_show):
+            if show_energy_lines:
+                # Draw the energy level line
+                plt.axhline(y=solution.eigenvalues[i], color='gray', linestyle='--', alpha=0.5)
+            
+            # Add the energy level to the wave function to seperate them visually
+            plt.plot(x, solution.eigenvalues[i] + solution.eigenvectors[:, i] * scale_factor, label=f"E = {solution.eigenvalues[i]}")
+            
+        plt.show()
     
     
     
+    return solution, x
+  
 if __name__ == "__main__":
     # Example problem
-    finite_square_well(m=9.109e-31, L=1e-9, V_0=1.602e-18, n=1000)
+    finite_square_well(m=9.109e-31, L=1e-9, V_0=1.602e-18, n=1000, visualize=True, num_waves_to_show=15)
