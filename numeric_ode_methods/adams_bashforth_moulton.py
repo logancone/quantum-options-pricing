@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from runge_kutta_four import runge_kutta_four
+from numeric_ode_methods.runge_kutta_four import runge_kutta_four
 
 def adams_bashforth_moulton(x_0: float, y_0: float, y_slope: Callable, x_n: float, h: float):
     """Runs the Adams Bashforth Moulton method.
