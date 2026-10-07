@@ -1,13 +1,22 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
+import time
 
 # Reduced Plank Constant (in Joules)
 RPC = 1.05457182e-34 #J
 
-convert_to_ev = lambda x: x / 1.602e-19
+j_to_ev = lambda x: x / 1.602e-19
+ev_to_j = lambda x: x * 1.602e-19
 
-def finite_square_well(m: float, L: float, V_0: float, n: int, 
-                       visualize: bool = True, num_waves_to_show: int = 8, show_energy_lines: bool = False):
+def finite_square_well(m: float, 
+                       L: float, 
+                       V_0: float, 
+                       n: int, 
+                       visualize: bool = True, 
+                       num_waves_to_show: int = 8, 
+                       show_energy_lines: bool = False):
     """Simulates a finite square well using the Schrodinger equation.
     Visualizes using matplotlib
 
@@ -71,10 +80,10 @@ def finite_square_well(m: float, L: float, V_0: float, n: int,
         
     solution = np.linalg.eigh(equations)
     
+    x = x[1:-1]
     
     # Graphing the waves
     if visualize:
-        x = x[1:-1]
         
         # Plot red line for 0 energy (floor)
         plt.axhline(0, color='red')
@@ -95,10 +104,119 @@ def finite_square_well(m: float, L: float, V_0: float, n: int,
             
         plt.show()
     
+    return x, solution
+
+
+def evolve_probability_distribution(energy_levels_to_superpose: list[int], 
+                                    dt: float, 
+                                    x: np.ndarray,
+                                    eigenvalues: np.ndarray, 
+                                    eigenvectors: np.ndarray):
+    
+    c = np.array([(1/np.sqrt(len(energy_levels_to_superpose)))]*len(energy_levels_to_superpose))
+    
+    fig, ax = plt.subplots()
+
+    # calculate @ t=0
+    psi_t = 0
+    for i in range(len(energy_levels_to_superpose)):
+        psi_t += c[i]*eigenvectors[energy_levels_to_superpose[i]]
+        
+    probability = np.abs(psi_t)**2
+    line, = ax.plot(x, probability)
+    
+    # Highpoints
+    # ax.axvline(x[296])
+    # ax.axvline(x[701])
+    increasing = True
+    last_left_highpoint_val = probability[296]
+    
+    print(f"Estimated frequency: {(eigenvalues[1]-eigenvalues[0]) / (2*np.pi*RPC)}")
+    
+    start_frame = 0
+    def update(frame):
+        t = frame * dt
+        
+        psi_t = 0
+        for i in range(len(energy_levels_to_superpose)):
+            psi_t += c[i]*eigenvectors[energy_levels_to_superpose[i]]*np.exp(-1j*eigenvalues[energy_levels_to_superpose[i]]*t / 1.05e-34)
+            
+        probability = np.abs(psi_t)**2
+        
+        line.set_ydata(probability)
+        
+        # nonlocal last_left_highpoint_val, increasing, start_time
+        # if increasing == True and probability[296] < last_left_highpoint_val:
+        #     end_time = time.perf_counter()
+        #     print(f"F: {end_time - start_time} IRL, {(end_time-start_time)*dt/10} True") #10 is the interval of anim
+        #     start_time = end_time
+        #     increasing = False
+        # elif probability[296] > last_left_highpoint_val:
+        #     increasing = True
+        nonlocal start_frame, increasing, last_left_highpoint_val
+
+        if increasing and probability[296] < last_left_highpoint_val:
+            if start_frame is not None:
+                period_frames = frame - start_frame
+                period = period_frames * dt
+
+                print(f"Freq: {1/period}")
+
+            start_frame = frame
+            increasing = False
+
+        elif probability[296] > last_left_highpoint_val:
+            increasing = True
+        
+        last_left_highpoint_val = probability[296]
+        
+        # print(probability.argmax())
+        
+        return line,
+    
+    anim = FuncAnimation(fig=fig,
+                        func=update,
+                        frames=2000,
+                        interval=10)
+    
+    plt.show()
+        
+def plot_error_vs_grid_spacing():
+    L = 5e-10 #m
+    V_0 = ev_to_j(25) #25eV in J\
+
+    m = 9.10938e-31 #electron mass in kg
+    
+    correct_eigenvalues = (1.12294, 4.46186, 9.90751, 17.16578, 24.78411)
+    
+    n_values = [25, 50, 100, 250, 500, 1000]
+    
+    h_values = []
+    errored_eigenvalues = []
+    eig_1_error = []
+    
+    for n in n_values:
+        h_values.append((5*L)/n)
+        x, (eigval, eigvec) = finite_square_well(m=m, L=L, V_0=V_0,n=n,visualize=False)
+        errored_eigenvalues.append(tuple(j_to_ev(eigval[:5])))
+        
+        eig_1_error.append(np.abs(j_to_ev(eigval[0])-correct_eigenvalues[0])/correct_eigenvalues[0])
+    
+    print(h_values)
+    print(eig_1_error)
+    plt.loglog(h_values, eig_1_error)
+    plt.show()
+        
+        
     
     
-    return solution, x
-  
+        
+    
+    
+    
 if __name__ == "__main__":
     # Example problem
-    finite_square_well(m=9.109e-31, L=1e-9, V_0=1.602e-18, n=1000, visualize=True, num_waves_to_show=15)
+    # x, (eigval, eigvec) = finite_square_well(m=9.109e-31, L=1e-9, V_0=1.602e-18, n=1000, visualize=False, num_waves_to_show=5)
+    # evolve_probability_distribution([0,1],3e-17, x, eigval, eigvec)
+    plot_error_vs_grid_spacing()
+
