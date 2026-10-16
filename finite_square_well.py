@@ -145,14 +145,6 @@ def evolve_probability_distribution(energy_levels_to_superpose: list[int],
         
         line.set_ydata(probability)
         
-        # nonlocal last_left_highpoint_val, increasing, start_time
-        # if increasing == True and probability[296] < last_left_highpoint_val:
-        #     end_time = time.perf_counter()
-        #     print(f"F: {end_time - start_time} IRL, {(end_time-start_time)*dt/10} True") #10 is the interval of anim
-        #     start_time = end_time
-        #     increasing = False
-        # elif probability[296] > last_left_highpoint_val:
-        #     increasing = True
         nonlocal start_frame, increasing, last_left_highpoint_val
 
         if increasing and probability[296] < last_left_highpoint_val:
@@ -179,9 +171,12 @@ def evolve_probability_distribution(energy_levels_to_superpose: list[int],
                         frames=2000,
                         interval=10)
     
+    plt.title("Probability Distribution")
+    plt.xlabel("Position")
+    plt.ylabel("Probability")
     plt.show()
         
-def plot_error_vs_grid_spacing():
+def plot_error_vs_grid_spacing(plot_all = False):
     L = 5e-10 #m
     V_0 = ev_to_j(25) #25eV in J\
 
@@ -194,6 +189,10 @@ def plot_error_vs_grid_spacing():
     h_values = []
     errored_eigenvalues = []
     eig_1_error = []
+    eig_2_error = []
+    eig_3_error = []
+    eig_4_error = []
+    eig_5_error = []
     
     for n in n_values:
         h_values.append((5*L)/n)
@@ -201,22 +200,68 @@ def plot_error_vs_grid_spacing():
         errored_eigenvalues.append(tuple(j_to_ev(eigval[:5])))
         
         eig_1_error.append(np.abs(j_to_ev(eigval[0])-correct_eigenvalues[0])/correct_eigenvalues[0])
+        eig_2_error.append(np.abs(j_to_ev(eigval[1])-correct_eigenvalues[1])/correct_eigenvalues[1])
+        eig_3_error.append(np.abs(j_to_ev(eigval[2])-correct_eigenvalues[2])/correct_eigenvalues[2])
+        eig_4_error.append(np.abs(j_to_ev(eigval[3])-correct_eigenvalues[3])/correct_eigenvalues[3])
+        eig_5_error.append(np.abs(j_to_ev(eigval[4])-correct_eigenvalues[4])/correct_eigenvalues[4])
     
-    print(h_values)
-    print(eig_1_error)
-    plt.loglog(h_values, eig_1_error)
+    # Plot example plot with ideal slope
+    x = np.arange(0, 101)
+    y = 2*x
+    plt.axis('equal')
+    plt.title("Prediction slope=2 to compare with log-log")
+    plt.plot(x, y)
     plt.show()
-        
-        
     
+    # Plot true log log graphs
     
+    # Eigenvalue 1
+    plt.axis('equal')
+    plt.loglog(h_values, eig_1_error)
+    plt.title("Eigenvalue 1 Error vs. h Value")
+    plt.xlabel("H-Value")
+    plt.ylabel("Eigenvalue Error")
+    plt.show()
+    
+    if plot_all:
+        # Eigenvalue 2
+        plt.axis('equal')
+        plt.loglog(h_values, eig_2_error)
+        plt.title("Eigenvalue 2 Error vs. h Value")
+        plt.xlabel("H-Value")
+        plt.ylabel("Eigenvalue Error")
+        plt.show()
+
+        # Eigenvalue 3
+        plt.axis('equal')
+        plt.loglog(h_values, eig_3_error)
+        plt.title("Eigenvalue 3 Error vs. h Value")
+        plt.xlabel("H-Value")
+        plt.ylabel("Eigenvalue Error")
+        plt.show()
+            
+        # Eigenvalue 4
+        plt.axis('equal')
+        plt.loglog(h_values, eig_4_error)
+        plt.title("Eigenvalue 4 Error vs. h Value")
+        plt.xlabel("H-Value")
+        plt.ylabel("Eigenvalue Error")
+        plt.show()
         
-    
+        # Eigenvalue 5
+        plt.axis('equal')
+        plt.loglog(h_values, eig_5_error)
+        plt.title("Eigenvalue 5 Error vs. h Value")
+        plt.xlabel("H-Value")
+        plt.ylabel("Eigenvalue Error")
+        plt.show()
+        
+  
     
     
 if __name__ == "__main__":
     # Example problem
-    # x, (eigval, eigvec) = finite_square_well(m=9.109e-31, L=1e-9, V_0=1.602e-18, n=1000, visualize=False, num_waves_to_show=5)
-    # evolve_probability_distribution([0,1],3e-17, x, eigval, eigvec)
-    plot_error_vs_grid_spacing()
+    x, (eigval, eigvec) = finite_square_well(m=9.109e-31, L=1e-9, V_0=1.602e-18, n=1000, visualize=True, num_waves_to_show=5)
+    evolve_probability_distribution([0,1],3e-17, x, eigval, eigvec)
+    plot_error_vs_grid_spacing(plot_all=False)
 
