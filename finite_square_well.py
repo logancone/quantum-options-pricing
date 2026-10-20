@@ -2,8 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-import time
-
 # Reduced Plank Constant (in Joules)
 RPC = 1.05457182e-34 #J
 
@@ -263,5 +261,5 @@ if __name__ == "__main__":
     # Example problem
     x, (eigval, eigvec) = finite_square_well(m=9.109e-31, L=1e-9, V_0=1.602e-18, n=1000, visualize=True, num_waves_to_show=5)
     evolve_probability_distribution([0,1],3e-17, x, eigval, eigvec)
-    plot_error_vs_grid_spacing(plot_all=False)
+    # plot_error_vs_grid_spacing(plot_all=False)
 
