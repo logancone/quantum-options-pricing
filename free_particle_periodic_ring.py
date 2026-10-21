@@ -1,5 +1,8 @@
 import numpy as np
 
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
 def free_particle(m: float, 
                        L: float,
                        n: int):
@@ -66,8 +69,8 @@ def free_particle(m: float,
     solution = np.linalg.eigh(equations)
     
     # Calculate initial wavefunction with Gaussian Packet
-    # k_0 = (2*np.pi*2)/L
-    k_0 = 0
+    k_0 = (2*np.pi*2)/L
+    # k_0 = 0
     psi_x_0 = ((1/(2*np.pi*(1**2)))**0.25)*np.exp(-x**2/4*1**2)*np.exp(1j*k_0*x)
         
     # Calculate coefficients to construct new wavefunction
@@ -78,16 +81,36 @@ def free_particle(m: float,
         
     c_n = np.array(c_n)
     
-    new_wavefunction = solution.eigenvectors * c_n
+    # new_wavefunction = solution.eigenvectors @ c_n
+    prob_dist = np.abs(solution.eigenvectors @ c_n)**2
     
     # Begin evolving through time and check against correct values
     t_n = 5
     dt = 0.1
     
-    t = 0
-    while t < t_n:
-        # psi_t = solution.eigenvectors @ (c_n * np.exp(-1j*solution.eigenvalues*t))
-        psi_t = new_wavefunction @ np.exp(-1j*solution.eigenvalues*t)
+    # t = 0
+    # while t < t_n:
+    #     # psi_t = solution.eigenvectors @ (c_n * np.exp(-1j*solution.eigenvalues*t))
+    #     psi_t = new_wavefunction @ np.exp(-1j*solution.eigenvalues*t)
+        
+    #     prob_dist = np.abs(psi_t)**2
+    #     average_particle_position = np.sum(prob_dist * x) / np.sum(prob_dist)
+        
+    #     experimental_width = np.sqrt(np.sum((x - average_particle_position)**2 * prob_dist) / np.sum(prob_dist))
+        
+    #     true_width = 1*np.sqrt(1+(t**2)/(4*1**4))
+        
+    #     print(f"t: {t:.1f} | Experimental Width: {experimental_width:.4f} | True Width: {true_width:.4f} | Error: {(np.abs((experimental_width-true_width)/true_width)*100):.5f}")
+        
+    #     t += dt
+    fig, ax = plt.subplots()
+    line, = ax.plot(x, prob_dist)
+    
+    def update(frame):
+        t = frame * dt
+        
+        # psi_t = new_wavefunction @ np.exp(-1j*solution.eigenvalues*t)
+        psi_t = solution.eigenvectors @ (c_n * np.exp(-1j*solution.eigenvalues*t))
         
         prob_dist = np.abs(psi_t)**2
         average_particle_position = np.sum(prob_dist * x) / np.sum(prob_dist)
@@ -96,10 +119,24 @@ def free_particle(m: float,
         
         true_width = 1*np.sqrt(1+(t**2)/(4*1**4))
         
-        print(f"t: {t:.1f} | Experimental Width: {experimental_width:.4f} | True Width: {true_width:.4f} | Error: {(np.abs((experimental_width-true_width)/true_width)*100):.5f}")
+        # print(f"t: {t:.1f} | Experimental Width: {experimental_width:.4f} | True Width: {true_width:.4f} | Error: {(np.abs((experimental_width-true_width)/true_width)*100):.5f}")
+        if t <= t_n:
+            print(f"t: {t:.1f} | Experimental Width: {experimental_width:.4f} | True Width: {true_width:.4f} | Error: {(np.abs((experimental_width-true_width)/true_width)*100):.5f}")
         
-        t += dt
+        line.set_ydata(prob_dist)
+        
+        return line,
     
+    anim = FuncAnimation(fig=fig,
+                        func=update,
+                        frames=2000,
+                        interval=10)
+    
+    plt.title("Probability Distribution")
+    plt.xlabel("Position")
+    plt.ylabel("Probability")
+    plt.show()
+
 
 if __name__ == "__main__":
     free_particle(m=1, L=20, n=64)
