@@ -66,7 +66,7 @@ def free_particle(m: float,
     solution = np.linalg.eigh(equations)
     
     # Calculate initial wavefunction with Gaussian Packet
-    k_0 = (2*np.pi*2)/L
+    # k_0 = (2*np.pi*2)/L
     k_0 = 0
     psi_x_0 = ((1/(2*np.pi*(1**2)))**0.25)*np.exp(-x**2/4*1**2)*np.exp(1j*k_0*x)
         
@@ -78,6 +78,7 @@ def free_particle(m: float,
         
     c_n = np.array(c_n)
     
+    new_wavefunction = solution.eigenvectors * c_n
     
     # Begin evolving through time and check against correct values
     t_n = 5
@@ -85,7 +86,8 @@ def free_particle(m: float,
     
     t = 0
     while t < t_n:
-        psi_t = solution.eigenvectors @ (c_n * np.exp(-1j*solution.eigenvalues*t))
+        # psi_t = solution.eigenvectors @ (c_n * np.exp(-1j*solution.eigenvalues*t))
+        psi_t = new_wavefunction @ np.exp(-1j*solution.eigenvalues*t)
         
         prob_dist = np.abs(psi_t)**2
         average_particle_position = np.sum(prob_dist * x) / np.sum(prob_dist)
